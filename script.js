@@ -19,7 +19,7 @@
   const lastGradeSpan = document.getElementById('lastGrade');
   const bpmDisplaySpan = document.getElementById('bpmDisplay');
   const patternLabelSpan = document.getElementById('patternLabel');
-  const highScoreDisplay = document.getElementById('highScoreDisplay');
+  const menuHighScore = document.getElementById('menuHighScore');
 
   // ----- Game State -----
   let active = false;          // Is game running?
@@ -35,7 +35,7 @@
   
   // High score tracking
   let highScore = localStorage.getItem('rhythmTapHighScore') ? parseInt(localStorage.getItem('rhythmTapHighScore')) : 0;
-  if (highScoreDisplay) highScoreDisplay.innerText = highScore;
+  if (menuHighScore) menuHighScore.innerText = highScore;
   
   // Difficulty & tempo escalation
   let tempoIncreaseInterval = null;
@@ -77,7 +77,7 @@
     if (score > highScore) {
       highScore = Math.floor(score);
       localStorage.setItem('rhythmTapHighScore', highScore);
-      if (highScoreDisplay) highScoreDisplay.innerText = highScore;
+      if (menuHighScore) menuHighScore.innerText = highScore;
     }
   }
   
