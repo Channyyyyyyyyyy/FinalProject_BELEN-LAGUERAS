@@ -8,24 +8,72 @@
 </head>
 <body>
   <div class="game-container">
-    <!-- MAIN MENU SCREEN -->
+    <!-- MAIN MENU SCREEN - REDESIGNED LAYOUT -->
     <div id="mainMenu" class="screen main-menu">
-      <div class="game-title">🎵 RHYTHM TAP 🎶</div>
-      <div class="sub">feel the beat • perfect timing</div>
-      
-      <div class="info-card">
-        <p>🎧 <strong>How to play</strong></p>
-        <p>👉 Tap the <strong style="color:#ffaa66;">TAP ZONE</strong> or press <kbd>SPACE</kbd> / <kbd>↑</kbd> in sync with the moving notes.</p>
-        <p>🎯 Accuracy grades: <span style="color:#6fcf97;">PERFECT</span> • <span style="color:#f2c94c;">GREAT</span> • <span style="color:#f2994a;">GOOD</span> • <span style="color:#eb5757;">MISS</span></p>
-        <p>⚡ As tempo increases → patterns get faster & trickier!</p>
-        <p>🏆 High score lives in your session. Challenge yourself!</p>
+      <div class="hero-section">
+        <div class="game-title">🎵 RHYTHM TAP 🎶</div>
+        <div class="tagline">feel the beat · perfect timing</div>
       </div>
       
-      <button id="startGameBtn" class="btn btn-primary">🎮 START GAME 🎮</button>
-      <div style="margin-top: 20px; font-size: 12px; opacity: 0.7;">Assigned to: Lagueras-Belen</div>
+      <div class="menu-grid">
+        <div class="menu-card instructions-card">
+          <div class="card-header">
+            <span class="card-icon">🎧</span>
+            <h3>How to play</h3>
+          </div>
+          <div class="instruction-blocks">
+            <div class="instr-row">
+              <span class="instr-icon">👆</span>
+              <span>Tap the <strong class="highlight">TAP ZONE</strong> or press <kbd>SPACE</kbd> / <kbd>↑</kbd></span>
+            </div>
+            <div class="instr-row">
+              <span class="instr-icon">🎯</span>
+              <span>Sync with moving notes to hit the target line</span>
+            </div>
+            <div class="instr-row">
+              <span class="instr-icon">⚡</span>
+              <span>Tempo increases → patterns get faster & trickier!</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="menu-card grades-card">
+          <div class="card-header">
+            <span class="card-icon">⭐</span>
+            <h3>Accuracy Grades</h3>
+          </div>
+          <div class="grades-showcase">
+            <div class="grade-badge perfect">PERFECT <span>+100</span></div>
+            <div class="grade-badge great">GREAT <span>+70</span></div>
+            <div class="grade-badge good">GOOD <span>+40</span></div>
+            <div class="grade-badge miss">MISS <span>+0</span></div>
+          </div>
+          <div class="combo-note">🔥 Combo multiplies your score!</div>
+        </div>
+        
+        <div class="menu-card stats-card">
+          <div class="stat-item">
+            <span class="stat-emoji">🏆</span>
+            <span>High Score: <strong id="highScoreDisplay">0</strong></span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-emoji">🎵</span>
+            <span>Dynamic patterns & BPM scaling</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-emoji">💪</span>
+            <span>Challenge your rhythm reflexes!</span>
+          </div>
+        </div>
+      </div>
+      
+      <button id="startGameBtn" class="btn btn-primary start-btn">
+        <span class="btn-icon">🎮</span> START GAME <span class="btn-icon">🎵</span>
+      </button>
+      <div class="assign-credit">Assigned to: Lagueras-Belen</div>
     </div>
 
-    <!-- GAME SCREEN -->
+    <!-- GAME SCREEN - ENHANCED VISUALS -->
     <div id="gameScreen" class="screen game-screen">
       <div class="game-header">
         <div class="score-box">🎯 SCORE: <span id="scoreValue">0</span></div>
@@ -33,22 +81,28 @@
         <div class="grade-box">⭐ LAST: <span id="lastGrade">—</span></div>
       </div>
       
+      <!-- Enhanced track area with visual effects -->
       <div class="track-area">
+        <div class="track-lane-label">▶ TAP ZONE ◀</div>
         <div class="scrolling-zone">
           <div class="beat-track" id="beatTrack">
             <!-- dynamic notes injected here -->
           </div>
           <div class="target-line"></div>
+          <div class="beat-glow"></div>
         </div>
       </div>
 
       <div class="tap-pad" id="tapPad">
-        🎧 TAP ANYWHERE 🎧
-        <div style="font-size: 12px; margin-top: 8px;">␣ SPACE or ⬆️ arrow also works</div>
+        <div class="tap-icon">🎧</div>
+        <div class="tap-text">TAP ANYWHERE</div>
+        <div class="tap-hint">␣ SPACE or ⬆️ arrow also works</div>
       </div>
 
       <div class="tempo-indicator">
-        ⚡ BPM: <span id="bpmDisplay">100</span> &nbsp;&nbsp;|&nbsp; 🎵 PATTERN: <span id="patternLabel">basic</span>
+        <div class="tempo-item">⚡ BPM: <span id="bpmDisplay">100</span></div>
+        <div class="tempo-divider">|</div>
+        <div class="tempo-item">🎵 PATTERN: <span id="patternLabel">basic</span></div>
       </div>
       
       <div class="game-actions">

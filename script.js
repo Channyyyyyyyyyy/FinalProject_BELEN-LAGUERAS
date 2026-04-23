@@ -19,6 +19,7 @@
   const lastGradeSpan = document.getElementById('lastGrade');
   const bpmDisplaySpan = document.getElementById('bpmDisplay');
   const patternLabelSpan = document.getElementById('patternLabel');
+  const highScoreDisplay = document.getElementById('highScoreDisplay');
 
   // ----- Game State -----
   let active = false;          // Is game running?
@@ -31,6 +32,10 @@
   let currentBpm = 100;        // starting BPM
   let baseIntervalMs = 60000 / currentBpm; // ms per beat
   let patternStep = 0;
+  
+  // High score tracking
+  let highScore = localStorage.getItem('rhythmTapHighScore') ? parseInt(localStorage.getItem('rhythmTapHighScore')) : 0;
+  if (highScoreDisplay) highScoreDisplay.innerText = highScore;
   
   // Difficulty & tempo escalation
   let tempoIncreaseInterval = null;
@@ -67,6 +72,15 @@
     patternLabelSpan.innerText = currentPattern.name;
   }
   
+  // Update high score display and save
+  function updateHighScore() {
+    if (score > highScore) {
+      highScore = Math.floor(score);
+      localStorage.setItem('rhythmTapHighScore', highScore);
+      if (highScoreDisplay) highScoreDisplay.innerText = highScore;
+    }
+  }
+  
   // ----- Helper: schedule notes dynamically (based on current BPM and pattern)
   let lastScheduleFrame = 0;
   let scheduledBeatCount = 0;
@@ -99,13 +113,12 @@
         const nowRef = performance.now();
         if (noteSpawnTime > nowRef - 100) { // only if not too far in past
           const arrivalTime = noteSpawnTime;
-          // calculate visual progress: note will be at START_PERCENT at spawn, and reach target at arrival
-          // we store leftPercent based on animation frame (update dynamically)
+          // store visual progress: note will be at START_PERCENT at spawn, and reach target at arrival
           const noteObj = {
             id: nextNoteId++,
             beatIndex: beatIdx,
             spawnTime: noteSpawnTime,
-            targetTime: noteSpawnTime, // exact time to hit target
+            targetTime: noteSpawnTime,
             judged: false,
             leftPercent: START_PERCENT,
             judgedGrade: null
@@ -145,6 +158,7 @@
         else noteDiv.textContent = '🎵';
         noteDiv.style.opacity = '0.7';
         noteDiv.style.filter = 'grayscale(0.2)';
+        noteDiv.setAttribute('data-grade', note.judgedGrade);
       } else {
         noteDiv.textContent = '🎵';
       }
@@ -190,8 +204,8 @@
       tapPad.classList.add('tap-feedback');
       setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
       updateUI();
+      updateHighScore();
       
-      // remove note from array after judged (but keep for render flag, we can filter but keep)
       return true;
     } else {
       // MISS: penalty only if any active note passed target?
@@ -210,7 +224,7 @@
         tapPad.classList.add('tap-feedback');
         setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
       } else {
-        // empty tap but no note near -> slight miss but no combo reset? we choose minor miss but does not break combo fully? but to be accurate, reset combo
+        // empty tap but no note near -> minor miss but does not break combo fully? but to be accurate, reset combo
         combo = 0;
         lastGradeSpan.innerText = 'MISS';
         updateUI();
@@ -245,7 +259,7 @@
     comboSpan.innerText = combo;
   }
   
-  // tempo & pattern progression: every 12 seconds increase BPM by 8 and maybe change pattern
+  // tempo & pattern progression: every 10 seconds increase BPM by 8 and maybe change pattern
   function startProgression() {
     if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
     tempoIncreaseInterval = setInterval(() => {
@@ -255,20 +269,24 @@
       currentBpm = newBpm;
       bpmDisplaySpan.innerText = currentBpm;
       
-      // increase pattern difficulty every 2 speeds
-      if (currentBpm % 12 < 6 && patternComplexity < patternLibrary.length-1) {
-        patternComplexity = Math.min(patternLibrary.length-1, patternComplexity+1);
-        currentPattern = patternLibrary[patternComplexity];
-        updatePatternDisplay();
-      } else if (patternComplexity === 0 && currentBpm > 120) {
+      // increase pattern difficulty based on BPM thresholds
+      if (currentBpm >= 130 && patternComplexity < 1) {
         patternComplexity = 1;
         currentPattern = patternLibrary[1];
         updatePatternDisplay();
-      } else if (currentBpm > 150 && patternComplexity < 3) {
+      } else if (currentBpm >= 150 && patternComplexity < 2) {
+        patternComplexity = 2;
+        currentPattern = patternLibrary[2];
+        updatePatternDisplay();
+      } else if (currentBpm >= 170 && patternComplexity < 3) {
         patternComplexity = 3;
         currentPattern = patternLibrary[3];
         updatePatternDisplay();
-      } else if (currentBpm > 180 && patternComplexity < 5) {
+      } else if (currentBpm >= 190 && patternComplexity < 4) {
+        patternComplexity = 4;
+        currentPattern = patternLibrary[4];
+        updatePatternDisplay();
+      } else if (currentBpm >= 205 && patternComplexity < 5) {
         patternComplexity = 5;
         currentPattern = patternLibrary[5];
         updatePatternDisplay();
@@ -333,6 +351,7 @@
     if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
     if (animationId) cancelAnimationFrame(animationId);
     if (gameLoopInterval) clearInterval(gameLoopInterval);
+    updateHighScore();
   }
   
   function showGame() {
