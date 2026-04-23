@@ -8,71 +8,108 @@
 </head>
 <body>
   <div class="game-container">
-    <!-- MAIN MENU SCREEN - COMPLETELY REDESIGNED -->
+    <!-- MAIN MENU SCREEN -->
     <div id="mainMenu" class="screen main-menu">
-      <div class="logo-wrapper">
-        <div class="music-notes">♪ ♫ ♪</div>
-        <div class="game-title">RHYTHM <span class="highlight-text">TAP</span></div>
+      <div class="menu-header">
+        <div class="game-icon">♪ ♫ ♪</div>
+        <div class="game-title">RHYTHM <span style="background: linear-gradient(135deg, #ffaa66, #ff6633); background-clip: text; -webkit-background-clip: text; color: transparent;">TAP</span></div>
         <div class="game-subtitle">feel the beat · perfect timing</div>
       </div>
 
-      <div class="stats-preview">
-        <div class="stat-pill">
-          <span class="stat-icon">🏆</span>
-          <span>BEST: <strong id="menuHighScore">0</strong></span>
+      <!-- 3-Column Layout -->
+      <div class="menu-three-columns">
+        <!-- LEFT COLUMN - Game Info -->
+        <div class="info-panel">
+          <div class="panel-title">📋 GAME INFO</div>
+          <div class="how-card">
+            <h4>🎯 HOW TO PLAY</h4>
+            <p>Tap in perfect sync with musical beats when notes hit the target line. Accuracy determines your score!</p>
+          </div>
+          <div class="how-card">
+            <h4>❤️ LIVES SYSTEM</h4>
+            <p>Start with 3 lives. Each MISS costs 1 life. Game over when lives reach 0!</p>
+          </div>
+          <div class="how-card">
+            <h4>🌟 LEVEL SYSTEM</h4>
+            <p>Reach score milestones to level up! Higher levels = faster BPM + complex patterns</p>
+          </div>
+          <div class="difficulty-selector">
+            <div class="difficulty-label">⚡ DYNAMIC DIFFICULTY</div>
+            <div class="difficulty-options">
+              <div class="diff-btn active">AUTO-SCALING</div>
+            </div>
+          </div>
         </div>
-        <div class="stat-pill">
-          <span class="stat-icon">⚡</span>
-          <span>BPM: 100 → 210+</span>
+
+        <!-- CENTER COLUMN - Tap Zone Preview -->
+        <div class="tap-panel">
+          <div class="panel-title">🎧 TAP ZONE</div>
+          <div class="tap-zone-demo">
+            <div class="tap-icon-large">🎧</div>
+            <div class="tap-label">TAP ANYWHERE</div>
+            <div class="tap-hint">Click or press SPACE / ↑</div>
+          </div>
+          <div class="preview-track">
+            <div class="timeline-track">
+              <div class="timeline-note"></div>
+              <div class="timeline-target"></div>
+            </div>
+            <div class="preview-label">
+              <span>← NOTE MOVES</span>
+              <span>TAP AT TARGET →</span>
+            </div>
+          </div>
+          <div class="perfect-badge">🎯 PERFECT TIMING = MAX SCORE</div>
+        </div>
+
+        <!-- RIGHT COLUMN - Stats & Judgments -->
+        <div class="stats-panel">
+          <div class="panel-title">⭐ ACCURACY GRADES</div>
+          <div class="stat-badge">
+            <span>🏆 HIGH SCORE</span>
+            <span id="menuHighScore">0</span>
+          </div>
+          <div class="stat-badge">
+            <span>⚡ MAX BPM</span>
+            <span>210+</span>
+          </div>
+          <div class="judgment-label">JUDGMENT WINDOWS</div>
+          <div class="judgment-row">
+            <div class="judgment perfect">PERFECT<br><span class="judgment-value">±55ms</span><br>+100</div>
+            <div class="judgment great">GREAT<br><span class="judgment-value">±110ms</span><br>+70</div>
+            <div class="judgment good">GOOD<br><span class="judgment-value">±180ms</span><br>+40</div>
+            <div class="judgment miss">MISS<br><span class="judgment-value">&gt;180ms</span><br>0</div>
+          </div>
+          <div class="keyboard-shortcut">
+            <p>⌨️ KEYBOARD CONTROLS</p>
+            <div class="key-badge">
+              <span class="key">␣ SPACE</span>
+              <span>or</span>
+              <span class="key">↑ ARROW</span>
+            </div>
+          </div>
+          <div class="note-count">
+            <span>🎵 COMBO BONUS: +5 every 10 combo</span>
+          </div>
         </div>
       </div>
 
-      <div class="gameplay-showcase">
-        <div class="showcase-label">HOW TO PLAY</div>
-        <div class="timeline-visual">
-          <div class="timeline-track">
-            <div class="timeline-note"></div>
-            <div class="timeline-target"></div>
-          </div>
-          <div class="timeline-caption">tap when note hits the target →</div>
+      <!-- Bottom Section -->
+      <div class="bottom-section">
+        <div class="tempo-row">
+          <div class="tempo-item">🎵 START BPM: <strong>100</strong></div>
+          <div class="tempo-item">🎵 MAX BPM: <strong>210+</strong></div>
+          <div class="tempo-item">🎵 PATTERNS: <strong>6</strong></div>
         </div>
+        <button id="startGameBtn" class="btn start-btn">
+          <span>▶</span> START GAME <span>◀</span>
+        </button>
+        <div class="start-hint">🔥 Challenge yourself — how high can you score? 🔥</div>
       </div>
-
-      <div class="controls-grid">
-        <div class="control-card">
-          <div class="control-icon">🎯</div>
-          <div class="control-text">
-            <strong>Tap Zone</strong>
-            <span>Click anywhere on the pad</span>
-          </div>
-        </div>
-        <div class="control-card">
-          <div class="control-icon">⌨️</div>
-          <div class="control-text">
-            <strong>Keyboard</strong>
-            <span>SPACE or ↑ arrow</span>
-          </div>
-        </div>
-        <div class="control-card">
-          <div class="control-icon">⭐</div>
-          <div class="control-text">
-            <strong>Grades</strong>
-            <span>PERFECT · GREAT · GOOD · MISS</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="difficulty-badge">
-        🔥 Dynamic Difficulty: tempo increases & patterns get complex!
-      </div>
-
-      <button id="startGameBtn" class="btn btn-primary start-btn">
-        <span>▶</span> START GAME <span>◀</span>
-      </button>
 
       <div class="footer-credit">
-        <span>🎧 RHYTHM TAP · MASTER THE BEAT 🎧</span>
-        <span class="assign">Assigned to: Lagueras-Belen</span>
+        <p>🎧 RHYTHM TAP · MASTER THE BEAT 🎧</p>
+        <div class="assign">Assigned to: Lagueras-Belen</div>
       </div>
     </div>
 
@@ -81,7 +118,17 @@
       <div class="game-header">
         <div class="score-box">🎯 SCORE: <span id="scoreValue">0</span></div>
         <div class="combo-box">🔥 COMBO: <span id="comboValue">0</span></div>
+        <div class="lives-box">❤️ LIVES: <span id="livesValue">3</span></div>
         <div class="grade-box">⭐ LAST: <span id="lastGrade">—</span></div>
+      </div>
+      
+      <!-- Level Indicator -->
+      <div class="level-indicator">
+        <span>🌟 LEVEL <span id="levelValue">1</span> 🌟</span>
+        <div class="level-progress">
+          <div class="level-progress-bar" id="levelProgressBar"></div>
+        </div>
+        <span class="next-level-hint">Next level at <span id="nextLevelScore">500</span> pts</span>
       </div>
       
       <div class="track-area">
@@ -110,6 +157,18 @@
       <div class="game-actions">
         <button id="quitToMenuBtn" class="btn small-btn">🚪 MENU</button>
         <button id="restartGameBtn" class="btn small-btn">🔄 RESTART</button>
+      </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-icon">💀</div>
+        <h2>GAME OVER!</h2>
+        <p>Your Score: <strong id="finalScore">0</strong></p>
+        <p>Highest Level: <strong id="finalLevel">1</strong></p>
+        <button id="playAgainBtn" class="btn btn-primary">🎮 PLAY AGAIN 🎮</button>
+        <button id="menuAfterGameBtn" class="btn">🏠 MAIN MENU</button>
       </div>
     </div>
   </div>
