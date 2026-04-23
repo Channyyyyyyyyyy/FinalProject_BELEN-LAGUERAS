@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Rhythm Tap | Beat Master</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <!-- MAIN MENU SCREEN -->
+    <div id="mainMenu" class="screen main-menu">
+      <div class="game-title">🎵 RHYTHM TAP 🎶</div>
+      <div class="sub">feel the beat • perfect timing</div>
+      
+      <div class="info-card">
+        <p>🎧 <strong>How to play</strong></p>
+        <p>👉 Tap the <strong style="color:#ffaa66;">TAP ZONE</strong> or press <kbd>SPACE</kbd> / <kbd>↑</kbd> in sync with the moving notes.</p>
+        <p>🎯 Accuracy grades: <span style="color:#6fcf97;">PERFECT</span> • <span style="color:#f2c94c;">GREAT</span> • <span style="color:#f2994a;">GOOD</span> • <span style="color:#eb5757;">MISS</span></p>
+        <p>⚡ As tempo increases → patterns get faster & trickier!</p>
+        <p>🏆 High score lives in your session. Challenge yourself!</p>
+      </div>
+      
+      <button id="startGameBtn" class="btn btn-primary">🎮 START GAME 🎮</button>
+      <div style="margin-top: 20px; font-size: 12px; opacity: 0.7;">Assigned to: Lagueras-Belen</div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="gameScreen" class="screen game-screen">
+      <div class="game-header">
+        <div class="score-box">🎯 SCORE: <span id="scoreValue">0</span></div>
+        <div class="combo-box">🔥 COMBO: <span id="comboValue">0</span></div>
+        <div class="grade-box">⭐ LAST: <span id="lastGrade">—</span></div>
+      </div>
+      
+      <div class="track-area">
+        <div class="scrolling-zone">
+          <div class="beat-track" id="beatTrack">
+            <!-- dynamic notes injected here -->
+          </div>
+          <div class="target-line"></div>
+        </div>
+      </div>
+
+      <div class="tap-pad" id="tapPad">
+        🎧 TAP ANYWHERE 🎧
+        <div style="font-size: 12px; margin-top: 8px;">␣ SPACE or ⬆️ arrow also works</div>
+      </div>
+
+      <div class="tempo-indicator">
+        ⚡ BPM: <span id="bpmDisplay">100</span> &nbsp;&nbsp;|&nbsp; 🎵 PATTERN: <span id="patternLabel">basic</span>
+      </div>
+      
+      <div class="game-actions">
+        <button id="quitToMenuBtn" class="btn small-btn">🚪 MENU</button>
+        <button id="restartGameBtn" class="btn small-btn">🔄 RESTART</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
