@@ -8,103 +8,179 @@
 </head>
 <body>
   <div class="game-container">
-    <!-- MAIN MENU SCREEN -->
+    <!-- MAIN MENU SCREEN - COMPLETE LAYOUT WITH ALL GUIDES -->
     <div id="mainMenu" class="screen main-menu">
       <div class="menu-header">
         <div class="game-icon">♪ ♫ ♪</div>
-        <div class="game-title">RHYTHM <span style="background: linear-gradient(135deg, #ffaa66, #ff6633); background-clip: text; -webkit-background-clip: text; color: transparent;">TAP</span></div>
+        <div class="game-title">RHYTHM <span class="highlight-gradient">TAP</span></div>
         <div class="game-subtitle">feel the beat · perfect timing</div>
       </div>
 
-      <!-- 3-Column Layout -->
+      <!-- 3-Column Layout - Fully populated with guides -->
       <div class="menu-three-columns">
-        <!-- LEFT COLUMN - Game Info -->
+        
+        <!-- LEFT COLUMN - Game Info & Systems -->
         <div class="info-panel">
           <div class="panel-title">📋 GAME INFO</div>
-          <div class="how-card">
-            <h4>🎯 HOW TO PLAY</h4>
-            <p>Tap in perfect sync with musical beats when notes hit the target line. Accuracy determines your score!</p>
+          
+          <div class="info-section">
+            <div class="info-icon">🎯</div>
+            <div class="info-content">
+              <h4>HOW TO PLAY</h4>
+              <p>Tap in perfect sync with musical beats when notes hit the target line. Accuracy determines your score!</p>
+            </div>
           </div>
-          <div class="how-card">
-            <h4>❤️ LIVES SYSTEM</h4>
-            <p>Start with 3 lives. Each MISS costs 1 life. Game over when lives reach 0!</p>
+          
+          <div class="info-section">
+            <div class="info-icon">❤️</div>
+            <div class="info-content">
+              <h4>LIVES SYSTEM</h4>
+              <p>Start with <strong>3 lives</strong>. Each <span class="miss-text">MISS</span> costs 1 life. Game over when lives reach 0!</p>
+            </div>
           </div>
-          <div class="how-card">
-            <h4>🌟 LEVEL SYSTEM</h4>
-            <p>Reach score milestones to level up! Higher levels = faster BPM + complex patterns</p>
+          
+          <div class="info-section">
+            <div class="info-icon">🌟</div>
+            <div class="info-content">
+              <h4>LEVEL SYSTEM</h4>
+              <p>Reach score milestones to level up! Higher levels = faster BPM + complex patterns</p>
+            </div>
           </div>
-          <div class="difficulty-selector">
-            <div class="difficulty-label">⚡ DYNAMIC DIFFICULTY</div>
-            <div class="difficulty-options">
-              <div class="diff-btn active">AUTO-SCALING</div>
+          
+          <div class="info-section">
+            <div class="info-icon">⚡</div>
+            <div class="info-content">
+              <h4>DYNAMIC DIFFICULTY</h4>
+              <p><span class="auto-scale-badge">AUTO-SCALING</span> — Tempo increases automatically as you progress</p>
             </div>
           </div>
         </div>
 
-        <!-- CENTER COLUMN - Tap Zone Preview -->
+        <!-- CENTER COLUMN - Tap Zone & Visual Guide -->
         <div class="tap-panel">
           <div class="panel-title">🎧 TAP ZONE</div>
+          
           <div class="tap-zone-demo">
             <div class="tap-icon-large">🎧</div>
             <div class="tap-label">TAP ANYWHERE</div>
             <div class="tap-hint">Click or press SPACE / ↑</div>
           </div>
-          <div class="preview-track">
-            <div class="timeline-track">
-              <div class="timeline-note"></div>
-              <div class="timeline-target"></div>
-            </div>
-            <div class="preview-label">
-              <span>← NOTE MOVES</span>
-              <span>TAP AT TARGET →</span>
+          
+          <!-- Visual Timeline Guide -->
+          <div class="visual-guide">
+            <div class="guide-label">⚡ VISUAL GUIDE ⚡</div>
+            <div class="preview-track">
+              <div class="timeline-track">
+                <div class="timeline-note"></div>
+                <div class="timeline-target"></div>
+              </div>
+              <div class="preview-label">
+                <span>← NOTE MOVES RIGHT →</span>
+                <span class="tap-here">👆 TAP HERE 👆</span>
+              </div>
             </div>
           </div>
-          <div class="perfect-badge">🎯 PERFECT TIMING = MAX SCORE</div>
+          
+          <!-- Quick Tips -->
+          <div class="quick-tips">
+            <div class="tip-badge">💡 TIP: Watch the target line!</div>
+            <div class="tip-badge">🎵 Follow the rhythm pattern</div>
+            <div class="tip-badge">🔥 Maintain combo for bonus points</div>
+          </div>
         </div>
 
-        <!-- RIGHT COLUMN - Stats & Judgments -->
+        <!-- RIGHT COLUMN - Stats & Accuracy Guide -->
         <div class="stats-panel">
-          <div class="panel-title">⭐ ACCURACY GRADES</div>
-          <div class="stat-badge">
-            <span>🏆 HIGH SCORE</span>
-            <span id="menuHighScore">0</span>
-          </div>
-          <div class="stat-badge">
-            <span>⚡ MAX BPM</span>
-            <span>210+</span>
-          </div>
-          <div class="judgment-label">JUDGMENT WINDOWS</div>
-          <div class="judgment-row">
-            <div class="judgment perfect">PERFECT<br><span class="judgment-value">±55ms</span><br>+100</div>
-            <div class="judgment great">GREAT<br><span class="judgment-value">±110ms</span><br>+70</div>
-            <div class="judgment good">GOOD<br><span class="judgment-value">±180ms</span><br>+40</div>
-            <div class="judgment miss">MISS<br><span class="judgment-value">&gt;180ms</span><br>0</div>
-          </div>
-          <div class="keyboard-shortcut">
-            <p>⌨️ KEYBOARD CONTROLS</p>
-            <div class="key-badge">
-              <span class="key">␣ SPACE</span>
-              <span>or</span>
-              <span class="key">↑ ARROW</span>
+          <div class="panel-title">⭐ ACCURACY GUIDE</div>
+          
+          <div class="stat-cards">
+            <div class="stat-card">
+              <span class="stat-icon">🏆</span>
+              <span class="stat-label">HIGH SCORE</span>
+              <span class="stat-value" id="menuHighScore">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">⚡</span>
+              <span class="stat-label">MAX BPM</span>
+              <span class="stat-value">210+</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">🎵</span>
+              <span class="stat-label">PATTERNS</span>
+              <span class="stat-value">6</span>
             </div>
           </div>
-          <div class="note-count">
-            <span>🎵 COMBO BONUS: +5 every 10 combo</span>
+          
+          <div class="judgment-label">🎯 JUDGMENT WINDOWS</div>
+          <div class="judgment-grid">
+            <div class="judgment-card perfect">
+              <div class="judgment-name">PERFECT</div>
+              <div class="judgment-window">±55ms</div>
+              <div class="judgment-points">+100 pts</div>
+            </div>
+            <div class="judgment-card great">
+              <div class="judgment-name">GREAT</div>
+              <div class="judgment-window">±110ms</div>
+              <div class="judgment-points">+70 pts</div>
+            </div>
+            <div class="judgment-card good">
+              <div class="judgment-name">GOOD</div>
+              <div class="judgment-window">±180ms</div>
+              <div class="judgment-points">+40 pts</div>
+            </div>
+            <div class="judgment-card miss">
+              <div class="judgment-name">MISS</div>
+              <div class="judgment-window">&gt;180ms</div>
+              <div class="judgment-points">0 pts · -1 life</div>
+            </div>
+          </div>
+          
+          <div class="keyboard-guide">
+            <div class="guide-title">⌨️ KEYBOARD CONTROLS</div>
+            <div class="key-buttons">
+              <div class="key-btn"><kbd>␣ SPACE</kbd></div>
+              <div class="key-btn"><kbd>↑ ARROW</kbd></div>
+            </div>
+          </div>
+          
+          <div class="combo-bonus">
+            <span>🔥 COMBO BONUS: +5 points every 10 combo 🔥</span>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Section -->
+      <!-- Bottom Section - Tempo Info & Start Button -->
       <div class="bottom-section">
-        <div class="tempo-row">
-          <div class="tempo-item">🎵 START BPM: <strong>100</strong></div>
-          <div class="tempo-item">🎵 MAX BPM: <strong>210+</strong></div>
-          <div class="tempo-item">🎵 PATTERNS: <strong>6</strong></div>
+        <div class="tempo-grid">
+          <div class="tempo-card">
+            <span class="tempo-icon">🎵</span>
+            <span class="tempo-label">START BPM</span>
+            <span class="tempo-value">100</span>
+          </div>
+          <div class="tempo-card">
+            <span class="tempo-icon">⚡</span>
+            <span class="tempo-label">MAX BPM</span>
+            <span class="tempo-value">210+</span>
+          </div>
+          <div class="tempo-card">
+            <span class="tempo-icon">🎨</span>
+            <span class="tempo-label">PATTERNS</span>
+            <span class="tempo-value">6</span>
+          </div>
+          <div class="tempo-card">
+            <span class="tempo-icon">❤️</span>
+            <span class="tempo-label">START LIVES</span>
+            <span class="tempo-value">3</span>
+          </div>
         </div>
+        
         <button id="startGameBtn" class="btn start-btn">
-          <span>▶</span> START GAME <span>◀</span>
+          <span>🎮</span> START GAME <span>▶</span>
         </button>
-        <div class="start-hint">🔥 Challenge yourself — how high can you score? 🔥</div>
+        
+        <div class="challenge-text">
+          🔥 Challenge yourself — how high can you score? 🔥
+        </div>
       </div>
 
       <div class="footer-credit">
