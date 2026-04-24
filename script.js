@@ -144,6 +144,8 @@
       }
     }
   }
+
+  
   
   function updateNotesPosition(now) {
     for (let note of notesArray) {
@@ -225,7 +227,33 @@
     notesArray = notesArray.filter(n => !(n.judged === true && (performance.now() - n.targetTime) > 2000));
   }
   
-  function updateUI() { scoreSpan.innerText = Math.floor(score); comboSpan.innerText = combo; }
+ function updateUI() {
+  // ADDED: Lives display update
+  if (livesSpan) livesSpan.innerText = lives;
+  
+  // ADDED: Level display update
+  if (levelSpan) levelSpan.innerText = currentLevel;
+  
+  // ADDED: Next level score display
+  const nextLevelScore = currentLevel * 500;
+  if (nextLevelScoreSpan) nextLevelScoreSpan.innerText = nextLevelScore;
+  
+  // ADDED: Level progress bar calculation
+  const currentLevelProgress = score % 500;
+  const progressPercent = (currentLevelProgress / 500) * 100;
+  if (levelProgressBar) levelProgressBar.style.width = ${progressPercent}%;
+  
+  // ADDED: Level up logic
+  const newLevel = Math.floor(score / 500) + 1;
+  if (newLevel > currentLevel && newLevel <= 10) {
+    currentLevel = newLevel;
+    currentBpm = Math.min(210, 100 + (currentLevel - 1) * 12);
+    // Update pattern based on level
+    const patternIndex = Math.min(currentLevel - 1, patternLibrary.length - 1);
+    currentPattern = patternLibrary[patternIndex];
+    updatePatternDisplay();
+  }
+}
   
   function stopGameLoop() {
     if (gameLoopInterval) clearInterval(gameLoopInterval);
@@ -276,6 +304,53 @@
     gameOverModal.style.display = 'none';
     startGame();
   }
+
+
+  function gameOver() {
+  if (!active) return;
+  
+  active = false;
+  
+  // Stop all intervals and animations
+  if (gameLoopInterval) clearInterval(gameLoopInterval);
+  if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
+  if (animationId) cancelAnimationFrame(animationId);
+  
+  // Show game over modal with final stats
+  if (finalScoreSpan) finalScoreSpan.innerText = Math.floor(score);
+  if (finalLevelSpan) finalLevelSpan.innerText = currentLevel;
+  if (gameOverModal) gameOverModal.style.display = 'flex';
+  
+  // Update high score
+  updateHighScore();
+}
+
+// NEW FUNCTION - Lines 155-175
+function deductLifeAndMiss() {
+  if (!active) return;
+  
+  // Deduct one life
+  lives--;
+  updateUI();
+  
+  // Reset combo on miss
+  combo = 0;
+  updateUI();
+  
+  // Show MISS in last grade
+  if (lastGradeSpan) lastGradeSpan.innerText = 'MISS';
+  
+  // Add tap feedback for miss (red flash effect)
+  if (tapPad) {
+    tapPad.classList.add('tap-feedback');
+    setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
+  }
+  
+  // Check for game over
+  if (lives <= 0) {
+    gameOver();
+  }
+}
   
   // Event bindings
   startBtn.addEventListener('click', showGame);
