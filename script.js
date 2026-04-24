@@ -35,7 +35,6 @@
   let notesArray = [];
   let nextNoteId = 1;
   let score = 0;
-  let lives = 3;
   let combo = 0;
   let currentBpm = 100;
   let patternComplexity = 0;
