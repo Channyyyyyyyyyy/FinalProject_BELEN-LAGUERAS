@@ -1,9 +1,11 @@
 // ------------------- RHYTHM TAP GAME -------------------
 // Assigned to: Lagueras-Belen
-// Features: 3 Lives system + Score-based level progression
+// Features: scrolling notes, BPM increases over time, dynamic patterns,
+// perfect/great/good/miss judgment, combo & scoring.
+// FIXED: Lives deduction on miss, game over when lives = 0
 
 (function() {
-  // DOM Elements
+  // ----- DOM Elements -----
   const mainMenu = document.getElementById('mainMenu');
   const gameScreen = document.getElementById('gameScreen');
   const startBtn = document.getElementById('startGameBtn');
@@ -11,35 +13,27 @@
   const restartBtn = document.getElementById('restartGameBtn');
   const tapPad = document.getElementById('tapPad');
   const beatTrack = document.getElementById('beatTrack');
-  const gameOverModal = document.getElementById('gameOverModal');
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  const menuAfterGameBtn = document.getElementById('menuAfterGameBtn');
-  const finalScoreSpan = document.getElementById('finalScore');
-  const finalLevelSpan = document.getElementById('finalLevel');
-
-  const livesSpan = document.getElementById('livesValue');
-  const levelSpan = document.getElementById('levelValue');
-  const levelProgressBar = document.getElementById('levelProgressBar');
-  const nextLevelScoreSpan = document.getElementById('nextLevelScore');
-  const gameOverModal = document.getElementById('gameOverModal');
-  const finalScoreSpan = document.getElementById('finalScore');
-  const finalLevelSpan = document.getElementById('finalLevel'); 
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  const menuAfterGameBtn = document.getElementById('menuAfterGameBtn');
   
-  
+  // UI value spans
   const scoreSpan = document.getElementById('scoreValue');
   const comboSpan = document.getElementById('comboValue');
+  const livesSpan = document.getElementById('livesValue');
   const lastGradeSpan = document.getElementById('lastGrade');
   const bpmDisplaySpan = document.getElementById('bpmDisplay');
   const patternLabelSpan = document.getElementById('patternLabel');
   const menuHighScore = document.getElementById('menuHighScore');
-  const livesSpan = document.getElementById('livesValue');
   const levelSpan = document.getElementById('levelValue');
   const levelProgressBar = document.getElementById('levelProgressBar');
   const nextLevelScoreSpan = document.getElementById('nextLevelScore');
+  
+  // Game Over Modal elements
+  const gameOverModal = document.getElementById('gameOverModal');
+  const finalScoreSpan = document.getElementById('finalScore');
+  const finalLevelSpan = document.getElementById('finalLevel');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const menuAfterGameBtn = document.getElementById('menuAfterGameBtn');
 
-  // Game State
+  // ----- Game State -----
   let active = false;
   let animationId = null;
   let gameLoopInterval = null;
@@ -47,36 +41,46 @@
   let nextNoteId = 1;
   let score = 0;
   let combo = 0;
-  let currentBpm = 100;
-  let patternComplexity = 0;
   let lives = 3;
   let currentLevel = 1;
-  let levelThresholds = [0, 500, 1200, 2100, 3200, 4500, 6000, 7700, 9600, 11700];
+  let currentBpm = 100;
+  let patternStep = 0;
   
+  // High score tracking
   let highScore = localStorage.getItem('rhythmTapHighScore') ? parseInt(localStorage.getItem('rhythmTapHighScore')) : 0;
   if (menuHighScore) menuHighScore.innerText = highScore;
   
+  // Difficulty & tempo escalation
+  let tempoIncreaseInterval = null;
+  let patternComplexity = 0;
+  
+  // Timing windows (in milliseconds)
   const PERFECT_WINDOW = 55;
   const GREAT_WINDOW = 110;
   const GOOD_WINDOW = 180;
+  
   const TARGET_PERCENT = 88;
   const START_PERCENT = -12;
   const TRAVEL_DURATION_MS = 550;
+  
   const POINTS = { PERFECT: 100, GREAT: 70, GOOD: 40, MISS: 0 };
   
+  // Pattern sequences
   const patternLibrary = [
-    { name: 'basic', pattern: [1,0,1,0,1,0,1,0] },
-    { name: 'steady', pattern: [1,1,0,1,1,0,1,1] },
-    { name: 'double', pattern: [1,1,1,0,1,1,1,0] },
-    { name: 'triplet', pattern: [1,0,1,1,0,1,1,1] },
-    { name: 'rush', pattern: [1,1,1,1,0,1,1,1] },
-    { name: 'full', pattern: [1,1,1,1,1,1,1,1] }
+    { name: 'basic',    pattern: [1,0,1,0,1,0,1,0] },
+    { name: 'steady',   pattern: [1,1,0,1,1,0,1,1] },
+    { name: 'double',   pattern: [1,1,1,0,1,1,1,0] },
+    { name: 'triplet',  pattern: [1,0,1,1,0,1,1,1] },
+    { name: 'rush',     pattern: [1,1,1,1,0,1,1,1] },
+    { name: 'full',     pattern: [1,1,1,1,1,1,1,1] }
   ];
   let currentPattern = patternLibrary[0];
+  let window_gameStartTime = null;
   
-  const levelBpmMap = { 1: 100, 2: 115, 3: 130, 4: 145, 5: 160, 6: 175, 7: 190, 8: 205, 9: 215, 10: 225 };
-  
-  function updatePatternDisplay() { patternLabelSpan.innerText = currentPattern.name; }
+  // ----- Helper Functions -----
+  function updatePatternDisplay() {
+    if (patternLabelSpan) patternLabelSpan.innerText = currentPattern.name;
+  }
   
   function updateHighScore() {
     if (score > highScore) {
@@ -86,283 +90,404 @@
     }
   }
   
-  function checkLevelUp() {
-    let newLevel = currentLevel;
-    for (let i = currentLevel; i < levelThresholds.length; i++) {
-      if (score >= levelThresholds[i] && i + 1 > currentLevel) newLevel = i + 1;
-    }
-    if (newLevel > currentLevel) {
+  function updateUI() {
+    if (scoreSpan) scoreSpan.innerText = Math.floor(score);
+    if (comboSpan) comboSpan.innerText = combo;
+    if (livesSpan) livesSpan.innerText = lives;
+    if (bpmDisplaySpan) bpmDisplaySpan.innerText = currentBpm;
+    if (levelSpan) levelSpan.innerText = currentLevel;
+    
+    const nextLevelScore = currentLevel * 500;
+    if (nextLevelScoreSpan) nextLevelScoreSpan.innerText = nextLevelScore;
+    
+    const currentLevelProgress = score % 500;
+    const progressPercent = (currentLevelProgress / 500) * 100;
+    if (levelProgressBar) levelProgressBar.style.width = `${progressPercent}%`;
+    
+    const newLevel = Math.floor(score / 500) + 1;
+    if (newLevel > currentLevel && newLevel <= 10) {
       currentLevel = newLevel;
-      levelSpan.innerText = currentLevel;
-      let targetBpm = levelBpmMap[currentLevel] || 210;
-      if (targetBpm > currentBpm) { currentBpm = targetBpm; bpmDisplaySpan.innerText = currentBpm; }
-      if (currentLevel >= 9) patternComplexity = 5;
-      else if (currentLevel >= 7) patternComplexity = 4;
-      else if (currentLevel >= 5) patternComplexity = 3;
-      else if (currentLevel >= 3) patternComplexity = 2;
-      else if (currentLevel >= 2) patternComplexity = 1;
-      currentPattern = patternLibrary[patternComplexity];
+      currentBpm = Math.min(210, 100 + (currentLevel - 1) * 12);
+      if (bpmDisplaySpan) bpmDisplaySpan.innerText = currentBpm;
+      if (levelSpan) levelSpan.innerText = currentLevel;
+      
+      const patternIndex = Math.min(currentLevel - 1, patternLibrary.length - 1);
+      currentPattern = patternLibrary[patternIndex];
       updatePatternDisplay();
     }
-    let nextThreshold = levelThresholds[currentLevel] || levelThresholds[levelThresholds.length - 1];
-    let prevThreshold = levelThresholds[currentLevel - 1] || 0;
-    let progressPercent = Math.min(100, ((score - prevThreshold) / (nextThreshold - prevThreshold)) * 100);
-    levelProgressBar.style.width = progressPercent + '%';
-    nextLevelScoreSpan.innerText = nextThreshold;
   }
   
-  function loseLife() {
-    lives--;
-    livesSpan.innerText = lives;
-    if (lives <= 0) gameOver();
-  }
-  
+  // ----- GAME OVER FUNCTION -----
   function gameOver() {
+    if (!active) return;
+    
     active = false;
-    stopGameLoop();
-    finalScoreSpan.innerText = Math.floor(score);
-    finalLevelSpan.innerText = currentLevel;
-    gameOverModal.style.display = 'flex';
+    
+    if (gameLoopInterval) clearInterval(gameLoopInterval);
+    if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
+    if (animationId) cancelAnimationFrame(animationId);
+    
+    if (finalScoreSpan) finalScoreSpan.innerText = Math.floor(score);
+    if (finalLevelSpan) finalLevelSpan.innerText = currentLevel;
+    if (gameOverModal) gameOverModal.style.display = 'flex';
+    
     updateHighScore();
   }
   
+  // ----- DEDUCT LIFE AND HANDLE MISS -----
+  function deductLifeAndMiss() {
+    if (!active) return;
+    
+    lives--;
+    updateUI();
+    
+    combo = 0;
+    updateUI();
+    
+    if (lastGradeSpan) lastGradeSpan.innerText = 'MISS';
+    
+    if (tapPad) {
+      tapPad.classList.add('tap-feedback');
+      setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
+    }
+    
+    if (lives <= 0) {
+      gameOver();
+    }
+  }
+  
+  // ----- Schedule notes -----
   function scheduleNotesLoop() {
-    if (!active || !window._gameStartTime) return;
+    if (!active || !window_gameStartTime) return;
+    
     const now = performance.now();
-    const elapsedMs = now - window._gameStartTime;
     const beatDurationMs = 60000 / currentBpm;
-    let latestBeatIndex = Math.floor(elapsedMs / beatDurationMs) + 4;
+    let latestBeatIndex = Math.floor((now - window_gameStartTime) / beatDurationMs) + 6;
+    
     let maxGenerated = 0;
-    for (let note of notesArray) if (note.beatIndex > maxGenerated) maxGenerated = note.beatIndex;
+    for (let note of notesArray) {
+      if (note.beatIndex > maxGenerated) maxGenerated = note.beatIndex;
+    }
+    
     const patternLen = currentPattern.pattern.length;
     for (let beatIdx = maxGenerated + 1; beatIdx <= latestBeatIndex; beatIdx++) {
-      if (currentPattern.pattern[beatIdx % patternLen] === 1) {
-        const noteSpawnTime = window._gameStartTime + (beatIdx * beatDurationMs);
-        if (noteSpawnTime > performance.now() - 100) {
-          notesArray.push({ id: nextNoteId++, beatIndex: beatIdx, targetTime: noteSpawnTime, judged: false, leftPercent: START_PERCENT, judgedGrade: null });
+      const patternPos = beatIdx % patternLen;
+      const shouldSpawn = currentPattern.pattern[patternPos] === 1;
+      
+      if (shouldSpawn) {
+        const noteSpawnTime = window_gameStartTime + (beatIdx * beatDurationMs);
+        const nowRef = performance.now();
+        
+        if (noteSpawnTime > nowRef - 200) {
+          const noteObj = {
+            id: nextNoteId++,
+            beatIndex: beatIdx,
+            targetTime: noteSpawnTime,
+            judged: false,
+            judgedGrade: null,
+            leftPercent: START_PERCENT
+          };
+          notesArray.push(noteObj);
         }
       }
     }
   }
-
   
-  
+  // ----- Update note positions -----
   function updateNotesPosition(now) {
     for (let note of notesArray) {
       if (note.judged) continue;
-      let progress = 1 - ((note.targetTime - now) / TRAVEL_DURATION_MS);
+      
+      const timeToTarget = note.targetTime - now;
+      const totalDuration = TRAVEL_DURATION_MS;
+      let progress = 1 - (timeToTarget / totalDuration);
       if (progress < 0) progress = 0;
       if (progress > 1) progress = 1;
-      note.leftPercent = START_PERCENT + (TARGET_PERCENT - START_PERCENT) * progress;
-      note.leftPercent = Math.min(TARGET_PERCENT + 5, Math.max(START_PERCENT - 2, note.leftPercent));
+      
+      const leftPos = START_PERCENT + (TARGET_PERCENT - START_PERCENT) * progress;
+      note.leftPercent = Math.min(TARGET_PERCENT + 5, Math.max(START_PERCENT - 2, leftPos));
     }
   }
   
+  // ----- Render notes -----
   function renderNotes() {
+    if (!beatTrack) return;
     beatTrack.innerHTML = '';
+    
     for (let note of notesArray) {
       if (note.judged && note.judgedGrade === 'MISS') continue;
+      
       const noteDiv = document.createElement('div');
       noteDiv.className = 'beat-note';
       noteDiv.style.left = `${note.leftPercent}%`;
+      
       if (note.judged && note.judgedGrade) {
         if (note.judgedGrade === 'PERFECT') noteDiv.textContent = '⚡';
         else if (note.judgedGrade === 'GREAT') noteDiv.textContent = '👍';
         else if (note.judgedGrade === 'GOOD') noteDiv.textContent = '✔️';
         else noteDiv.textContent = '🎵';
         noteDiv.style.opacity = '0.7';
-      } else { noteDiv.textContent = '🎵'; }
+      } else {
+        noteDiv.textContent = '🎵';
+      }
       beatTrack.appendChild(noteDiv);
     }
   }
   
-  function evaluateTap() {
-    if (!active) return false;
-    const now = performance.now();
-    let bestNote = null, bestDelta = Infinity;
-    for (let note of notesArray) {
-      if (note.judged) continue;
-      const delta = Math.abs(now - note.targetTime);
-      if (delta < bestDelta && delta <= GOOD_WINDOW + 30) { bestDelta = delta; bestNote = note; }
-    }
-    if (bestNote && bestDelta <= GOOD_WINDOW) {
-      let grade = bestDelta <= PERFECT_WINDOW ? 'PERFECT' : (bestDelta <= GREAT_WINDOW ? 'GREAT' : 'GOOD');
-      score += POINTS[grade] + Math.floor(combo / 10) * 5;
-      combo++;
-      bestNote.judged = true;
-      bestNote.judgedGrade = grade;
-      lastGradeSpan.innerText = grade;
-      tapPad.classList.add('tap-feedback');
-      setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
-      updateUI();
-      updateHighScore();
-      checkLevelUp();
-      return true;
-    } else {
-      let anyMiss = false;
-      for (let note of notesArray) {
-        if (!note.judged && (now - note.targetTime) > GOOD_WINDOW + 50) {
-          note.judged = true; note.judgedGrade = 'MISS'; anyMiss = true;
-        }
-      }
-      combo = 0;
-      lastGradeSpan.innerText = 'MISS';
-      updateUI();
-      tapPad.classList.add('tap-feedback');
-      setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
-      loseLife();
-      return false;
-    }
-  }
-  
-  function cleanupMisses() {
+  // ----- Check for missed notes -----
+  function cleanupAndCheckMisses() {
     if (!active) return;
+    
     const now = performance.now();
+    let missed = false;
+    
     for (let note of notesArray) {
-      if (!note.judged && (now - note.targetTime) > GOOD_WINDOW + 80) {
-        note.judged = true; note.judgedGrade = 'MISS';
-        combo = 0; lastGradeSpan.innerText = 'MISS'; updateUI(); loseLife();
+      if (!note.judged && (now - note.targetTime) > GOOD_WINDOW + 100) {
+        note.judged = true;
+        note.judgedGrade = 'MISS';
+        missed = true;
       }
     }
+    
+    if (missed) {
+      deductLifeAndMiss();
+    }
+    
     notesArray = notesArray.filter(n => !(n.judged === true && (performance.now() - n.targetTime) > 2000));
   }
   
- function updateUI() {
-  // ADDED: Lives display update
-  if (livesSpan) livesSpan.innerText = lives;
-  
-  // ADDED: Level display update
-  if (levelSpan) levelSpan.innerText = currentLevel;
-  
-  // ADDED: Next level score display
-  const nextLevelScore = currentLevel * 500;
-  if (nextLevelScoreSpan) nextLevelScoreSpan.innerText = nextLevelScore;
-  
-  // ADDED: Level progress bar calculation
-  const currentLevelProgress = score % 500;
-  const progressPercent = (currentLevelProgress / 500) * 100;
-  if (levelProgressBar) levelProgressBar.style.width = ${progressPercent}%;
-  
-  // ADDED: Level up logic
-  const newLevel = Math.floor(score / 500) + 1;
-  if (newLevel > currentLevel && newLevel <= 10) {
-    currentLevel = newLevel;
-    currentBpm = Math.min(210, 100 + (currentLevel - 1) * 12);
-    // Update pattern based on level
-    const patternIndex = Math.min(currentLevel - 1, patternLibrary.length - 1);
-    currentPattern = patternLibrary[patternIndex];
-    updatePatternDisplay();
+  // ----- Evaluate tap -----
+  function evaluateTap() {
+    if (!active) return false;
+    
+    const now = performance.now();
+    let bestNote = null;
+    let bestDelta = Infinity;
+    
+    for (let note of notesArray) {
+      if (note.judged) continue;
+      const delta = Math.abs(now - note.targetTime);
+      if (delta < bestDelta && delta <= GOOD_WINDOW + 50) {
+        bestDelta = delta;
+        bestNote = note;
+      }
+    }
+    
+    if (bestNote && bestDelta <= GOOD_WINDOW) {
+      let grade = '';
+      let addPoints = 0;
+      
+      if (bestDelta <= PERFECT_WINDOW) {
+        grade = 'PERFECT';
+        addPoints = POINTS.PERFECT;
+      } else if (bestDelta <= GREAT_WINDOW) {
+        grade = 'GREAT';
+        addPoints = POINTS.GREAT;
+      } else {
+        grade = 'GOOD';
+        addPoints = POINTS.GOOD;
+      }
+      
+      score += addPoints;
+      combo++;
+      
+      if (combo % 10 === 0) {
+        score += 5;
+      }
+      
+      bestNote.judged = true;
+      bestNote.judgedGrade = grade;
+      
+      if (lastGradeSpan) lastGradeSpan.innerText = grade;
+      updateUI();
+      updateHighScore();
+      
+      if (tapPad) {
+        tapPad.classList.add('tap-feedback');
+        setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
+      }
+      
+      return true;
+    }
+    
+    const hasActiveNotes = notesArray.some(n => !n.judged);
+    if (hasActiveNotes) {
+      deductLifeAndMiss();
+    }
+    
+    return false;
   }
-}
   
-  function stopGameLoop() {
-    if (gameLoopInterval) clearInterval(gameLoopInterval);
-    if (animationId) cancelAnimationFrame(animationId);
-    active = false;
+  // ----- BPM progression -----
+  function startProgression() {
+    if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
+    
+    tempoIncreaseInterval = setInterval(() => {
+      if (!active) return;
+      
+      let newBpm = currentBpm + 5;
+      if (newBpm > 210) newBpm = 210;
+      currentBpm = newBpm;
+      if (bpmDisplaySpan) bpmDisplaySpan.innerText = currentBpm;
+      
+      if (currentBpm >= 130 && patternComplexity < 1) {
+        patternComplexity = 1;
+        currentPattern = patternLibrary[1];
+        updatePatternDisplay();
+      } else if (currentBpm >= 150 && patternComplexity < 2) {
+        patternComplexity = 2;
+        currentPattern = patternLibrary[2];
+        updatePatternDisplay();
+      } else if (currentBpm >= 170 && patternComplexity < 3) {
+        patternComplexity = 3;
+        currentPattern = patternLibrary[3];
+        updatePatternDisplay();
+      } else if (currentBpm >= 190 && patternComplexity < 4) {
+        patternComplexity = 4;
+        currentPattern = patternLibrary[4];
+        updatePatternDisplay();
+      } else if (currentBpm >= 205 && patternComplexity < 5) {
+        patternComplexity = 5;
+        currentPattern = patternLibrary[5];
+        updatePatternDisplay();
+      }
+    }, 12000);
   }
   
+  // ----- Animation loop -----
   function animationLoop() {
     if (!active) return;
+    
     const now = performance.now();
     updateNotesPosition(now);
-    cleanupMisses();
+    cleanupAndCheckMisses();
     scheduleNotesLoop();
     renderNotes();
+    
     animationId = requestAnimationFrame(animationLoop);
   }
   
+  // ----- Stop all game loops -----
+  function stopGameLoop() {
+    if (gameLoopInterval) clearInterval(gameLoopInterval);
+    if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
+    if (animationId) cancelAnimationFrame(animationId);
+    gameLoopInterval = null;
+    tempoIncreaseInterval = null;
+    animationId = null;
+  }
+  
+  // ----- Start the game -----
   function startGame() {
     stopGameLoop();
+    
     active = true;
-    score = 0; combo = 0; lives = 3; currentLevel = 1; currentBpm = 100; patternComplexity = 0;
-    notesArray = []; nextNoteId = 1; currentPattern = patternLibrary[0];
+    score = 0;
+    combo = 0;
+    lives = 3;
+    currentLevel = 1;
+    currentBpm = 100;
+    patternComplexity = 0;
+    notesArray = [];
+    nextNoteId = 1;
+    currentPattern = patternLibrary[0];
+    
+    updateUI();
     updatePatternDisplay();
-    bpmDisplaySpan.innerText = currentBpm;
-    scoreSpan.innerText = '0'; comboSpan.innerText = '0'; lastGradeSpan.innerText = '—';
-    livesSpan.innerText = '3'; levelSpan.innerText = '1'; levelProgressBar.style.width = '0%'; nextLevelScoreSpan.innerText = '500';
-    window._gameStartTime = performance.now() + 50;
-    setTimeout(() => { if (active) scheduleNotesLoop(); }, 30);
+    if (lastGradeSpan) lastGradeSpan.innerText = '—';
+    if (bpmDisplaySpan) bpmDisplaySpan.innerText = currentBpm;
+    
+    window_gameStartTime = performance.now() + 200;
+    
+    setTimeout(() => {
+      if (active) scheduleNotesLoop();
+    }, 50);
+    
+    startProgression();
     animationId = requestAnimationFrame(animationLoop);
-    gameLoopInterval = setInterval(() => { if (active) scheduleNotesLoop(); }, 200);
+    
+    gameLoopInterval = setInterval(() => {
+      if (active) scheduleNotesLoop();
+    }, 150);
   }
   
+  // ----- Reset and return to menu -----
   function resetAndShowMenu() {
     active = false;
     stopGameLoop();
-    gameOverModal.style.display = 'none';
-    mainMenu.style.display = 'flex';
-    gameScreen.style.display = 'none';
+    
+    if (mainMenu) mainMenu.style.display = 'flex';
+    if (gameScreen) gameScreen.style.display = 'none';
+    if (gameOverModal) gameOverModal.style.display = 'none';
+    
     notesArray = [];
-    if (animationId) cancelAnimationFrame(animationId);
-    if (gameLoopInterval) clearInterval(gameLoopInterval);
     updateHighScore();
   }
   
+  // ----- Show game screen and start -----
   function showGame() {
-    mainMenu.style.display = 'none';
-    gameScreen.style.display = 'flex';
-    gameOverModal.style.display = 'none';
+    if (mainMenu) mainMenu.style.display = 'none';
+    if (gameScreen) gameScreen.style.display = 'flex';
+    if (gameOverModal) gameOverModal.style.display = 'none';
     startGame();
   }
-
-
-  function gameOver() {
-  if (!active) return;
   
-  active = false;
+  // ----- Restart current game -----
+  function restartGame() {
+    stopGameLoop();
+    startGame();
+  }
   
-  // Stop all intervals and animations
-  if (gameLoopInterval) clearInterval(gameLoopInterval);
-  if (tempoIncreaseInterval) clearInterval(tempoIncreaseInterval);
-  if (animationId) cancelAnimationFrame(animationId);
+  // ----- Event Bindings -----
+  if (startBtn) {
+    startBtn.addEventListener('click', showGame);
+  }
   
-  // Show game over modal with final stats
-  if (finalScoreSpan) finalScoreSpan.innerText = Math.floor(score);
-  if (finalLevelSpan) finalLevelSpan.innerText = currentLevel;
-  if (gameOverModal) gameOverModal.style.display = 'flex';
+  if (quitBtn) {
+    quitBtn.addEventListener('click', resetAndShowMenu);
+  }
   
-  // Update high score
-  updateHighScore();
-}
-
-// NEW FUNCTION - Lines 155-175
-function deductLifeAndMiss() {
-  if (!active) return;
+  if (restartBtn) {
+    restartBtn.addEventListener('click', () => {
+      if (active) restartGame();
+      else showGame();
+    });
+  }
   
-  // Deduct one life
-  lives--;
-  updateUI();
+  if (playAgainBtn) {
+    playAgainBtn.addEventListener('click', () => {
+      if (gameOverModal) gameOverModal.style.display = 'none';
+      showGame();
+    });
+  }
   
-  // Reset combo on miss
-  combo = 0;
-  updateUI();
+  if (menuAfterGameBtn) {
+    menuAfterGameBtn.addEventListener('click', () => {
+      if (gameOverModal) gameOverModal.style.display = 'none';
+      resetAndShowMenu();
+    });
+  }
   
-  // Show MISS in last grade
-  if (lastGradeSpan) lastGradeSpan.innerText = 'MISS';
+  const tapHandler = (e) => {
+    e.preventDefault();
+    if (!active) return;
+    evaluateTap();
+  };
   
-  // Add tap feedback for miss (red flash effect)
   if (tapPad) {
-    tapPad.classList.add('tap-feedback');
-    setTimeout(() => tapPad.classList.remove('tap-feedback'), 120);
+    tapPad.addEventListener('click', tapHandler);
+    tapPad.addEventListener('touchstart', tapHandler);
   }
   
-  // Check for game over
-  if (lives <= 0) {
-    gameOver();
-  }
-}
+  window.addEventListener('keydown', (e) => {
+    if (!active) return;
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      evaluateTap();
+    }
+  });
   
-  // Event bindings
-  startBtn.addEventListener('click', showGame);
-  quitBtn.addEventListener('click', resetAndShowMenu);
-  restartBtn.addEventListener('click', () => { if (!active) showGame(); else { stopGameLoop(); startGame(); } });
-  playAgainBtn.addEventListener('click', () => { gameOverModal.style.display = 'none'; showGame(); });
-  menuAfterGameBtn.addEventListener('click', () => { gameOverModal.style.display = 'none'; resetAndShowMenu(); });
-  
-  tapPad.addEventListener('click', (e) => { e.preventDefault(); if (active) evaluateTap(); });
-  window.addEventListener('keydown', (e) => { if (active && (e.code === 'Space' || e.code === 'ArrowUp')) { e.preventDefault(); evaluateTap(); } });
-  
-  mainMenu.style.display = 'flex';
-  gameScreen.style.display = 'none';
-  gameOverModal.style.display = 'none';
+  if (mainMenu) mainMenu.style.display = 'flex';
+  if (gameScreen) gameScreen.style.display = 'none';
+  if (gameOverModal) gameOverModal.style.display = 'none';
 })();
