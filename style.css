@@ -1034,3 +1034,13 @@ body {
     padding: 4px 10px;
   }
 }
+
+@keyframes floatNotes {
+  0%, 100% { transform: translateY(0px); opacity: 0.8; text-shadow: 0 0 15px #ffaa66; }
+  50% { transform: translateY(-5px); opacity: 1; text-shadow: 0 0 25px #ffcc88; }
+}
+
+@keyframes slideNote {
+  0% { left: -10%; }
+  100% { left: 80%; }
+}
