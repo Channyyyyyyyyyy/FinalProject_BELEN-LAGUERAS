@@ -16,6 +16,17 @@
   const menuAfterGameBtn = document.getElementById('menuAfterGameBtn');
   const finalScoreSpan = document.getElementById('finalScore');
   const finalLevelSpan = document.getElementById('finalLevel');
+
+  const livesSpan = document.getElementById('livesValue');
+  const levelSpan = document.getElementById('levelValue');
+  const levelProgressBar = document.getElementById('levelProgressBar');
+  const nextLevelScoreSpan = document.getElementById('nextLevelScore');
+  const gameOverModal = document.getElementById('gameOverModal');
+  const finalScoreSpan = document.getElementById('finalScore');
+  const finalLevelSpan = document.getElementById('finalLevel'); 
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const menuAfterGameBtn = document.getElementById('menuAfterGameBtn');
+  
   
   const scoreSpan = document.getElementById('scoreValue');
   const comboSpan = document.getElementById('comboValue');
